@@ -1,8 +1,8 @@
-import { createRef, useCallback, useEffect, useState } from "react"
-import reactLogo from "./assets/react.svg"
-import viteLogo from "/vite.svg"
+import { createRef, useEffect, useState } from "react"
+import { useTimer } from "react-use-precision-timer"
+
 import Circle from "./components/Circle"
-import { useIntervalEffect, useToggle } from "@react-hookz/web"
+import { useToggle } from "@react-hookz/web"
 // import './App.css'
 
 const totalBeat = 4
@@ -21,39 +21,66 @@ function App() {
   const [passedTime, setPassedTime] = useState(0)
 
   const [lastUpdatedTime, setLastUpdatedTime] = useState(Date.now())
+  const [shouldBeatChangeAt, setShouldBeatChangeAt] = useState(Date.now()) // 시작시간에 interval 값을 계속 더한 값. 다음 비트로 바뀌어야 하는 정확한 시각
+  const [diffMillisBetweenBeats, setDiffMillisBetweenBeats] = useState(0) // shouldBeatChangeAt 시간에서 얼마나 틀어졌는지 차이를 저장, interval 보정에 사용
 
   const interval = (60 / bpm) * 1000 // ms
+  const calibratedInterval = interval - diffMillisBetweenBeats // 틀어진 시간만큼 빼서 interval 보정
 
-  const onInterval = useCallback(() => {
+  const onInterval = () => {
     const delta = Date.now() - lastUpdatedTime
 
     const newPassedTime = passedTime + delta
-    if (newPassedTime >= interval) {
+    if (newPassedTime >= calibratedInterval) {
+      // console.log(
+      //   "trig 1",
+      //   interval,
+      //   passedTime,
+      //   newPassedTime,
+      //   getNextBeat(currentBeat),
+      //   newPassedTime % interval
+      // )
       setCurrentBeat(getNextBeat(currentBeat))
-      setPassedTime(newPassedTime % interval)
+      setPassedTime(newPassedTime % calibratedInterval)
+
+      console.log(diffMillisBetweenBeats, interval, calibratedInterval)
+
+      // 비트가 바뀔 때 다음 비트로 바뀌어야 하는 정확한 시각도 같이 업데이트
+      setShouldBeatChangeAt((prev) => prev + interval)
+      setDiffMillisBetweenBeats(Date.now() - shouldBeatChangeAt) // 보정값도 같이 업데이트
     } else {
       setPassedTime(newPassedTime)
     }
 
     // debug
-    console.log(currentBeat, passedTime)
+    // console.log(currentBeat, passedTime)
 
     setLastUpdatedTime(Date.now())
-  }, [lastUpdatedTime])
+  }
 
   const reset = () => {
     setCurrentBeat(1)
     setPassedTime(0)
     setLastUpdatedTime(Date.now())
+    setShouldBeatChangeAt(Date.now() + interval)
+    setDiffMillisBetweenBeats(0)
   }
 
-  useIntervalEffect(onInterval, enabled ? 0 : undefined)
+  const timer = useTimer({ delay: 10, startImmediately: false }, onInterval)
 
   useEffect(() => {
     if (enabled) {
       reset()
+      timer.start()
+    } else {
+      timer.stop()
     }
   }, [enabled])
+
+  // bpm이 변경되면 리셋
+  useEffect(() => {
+    reset()
+  }, [bpm])
 
   const bpmInputRef = createRef<HTMLInputElement>()
 
@@ -89,7 +116,6 @@ function App() {
             ref={bpmInputRef}
             onBlur={(e) => {
               setBpm(Number(e.target.value))
-              reset()
             }}
           />
           <span>BPM</span>
@@ -101,6 +127,9 @@ function App() {
         >
           {enabled ? "Stop" : "Start"}
         </button>
+      </div>
+      <div>
+        {currentBeat} {diffMillisBetweenBeats}
       </div>
     </div>
   )

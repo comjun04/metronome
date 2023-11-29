@@ -655,6 +655,18 @@ react-dom@^18.2.0:
     loose-envify "^1.1.0"
     scheduler "^0.23.0"
 
+react-sub-unsub@^2.1.6:
+  version "2.1.11"
+  resolved "https://registry.yarnpkg.com/react-sub-unsub/-/react-sub-unsub-2.1.11.tgz#173d0803e1d7b29611cb29d95f47ed7798e93642"
+  integrity sha512-FNKy0uD5wSieRE+l5RXaS0bUu6cR8XAXLDwOJnvSDGBMHcWVb1dod8ZkXYjPKtKR74tjYCEpMWcEAWCOoWNXxQ==
+
+react-use-precision-timer@^3.3.1:
+  version "3.3.1"
+  resolved "https://registry.yarnpkg.com/react-use-precision-timer/-/react-use-precision-timer-3.3.1.tgz#8e49b6f58d507647925bf633a673a7cb0b2b924d"
+  integrity sha512-PUCpFp48ftKoV2C+hz57mbqzqojE/Ol169Lyk2fFEIapsOH6tKIis8vZwmloedRe916qmJCOkXp+h9IB6QJY+A==
+  dependencies:
+    react-sub-unsub "^2.1.6"
+
 react@^18.2.0:
   version "18.2.0"
   resolved "https://registry.yarnpkg.com/react/-/react-18.2.0.tgz#555bd98592883255fa00de14f1151a917b5d77d5"
